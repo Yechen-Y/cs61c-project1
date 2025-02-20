@@ -29,6 +29,7 @@ Image *readData(char *filename)
 	FILE *fp = fopen(filename, "r");
 	if (fp == NULL) {
 		printf("There is no a file");
+		exit(-1);
 		return NULL;
 	}
 

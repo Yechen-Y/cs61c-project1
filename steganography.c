@@ -19,15 +19,47 @@
 #include "imageloader.h"
 
 //Determines what color the cell at the given row/col should be. This should not affect Image, and should allocate space for a new Color.
+// Todo: count a index with the given row/col.
+// 0 1 2
+// 3 4 5  index4 = (row - 1) * cols + col - 1   and it should be row 2 col 2
 Color *evaluateOnePixel(Image *image, int row, int col)
 {
 	//YOUR CODE HERE
+	Color *newColor = malloc(sizeof(Color));
+	int index = (row - 1) * image->cols + col - 1;
+	int color;
+
+	color = (**(image->image + index)).B & 1; // B的最后一项为1则为1 vice versa
+	if (color == 1) {
+		newColor->R = 255;
+		newColor->G = 255;
+		newColor->B = 255;
+	} else {
+		newColor->R = 0;
+		newColor->G = 0;
+		newColor->B = 0;
+	}
+	return newColor;
 }
 
 //Given an image, creates a new image extracting the LSB of the B channel.
 Image *steganography(Image *image)
 {
 	//YOUR CODE HERE
+	int pixelSum = image->cols * image->rows;
+	Image *newImage = malloc(sizeof(Image));
+	newImage->cols = image->cols;
+	newImage->rows = image->rows;
+	newImage->image = malloc(pixelSum*sizeof(Color*));
+
+	for (int countRow = 1; countRow < newImage->rows + 1; countRow++) {
+		for (int countCol = 1; countCol < newImage->cols + 1; countCol++) {
+			int index = (countRow - 1) * newImage->cols + countCol - 1;
+			*(newImage->image + index) = evaluateOnePixel(image, countRow, countCol);
+		}
+	}
+
+	return newImage;
 }
 
 /*
@@ -46,4 +78,11 @@ Make sure to free all memory before returning!
 int main(int argc, char **argv)
 {
 	//YOUR CODE HERE
+	Image *aImage = readData(argv[1]);
+	Image *newImage = steganography(aImage);
+
+	writeData(newImage);
+	free(aImage);
+	free(newImage);
+	return 0;
 }
