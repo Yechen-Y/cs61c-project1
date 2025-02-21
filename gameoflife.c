@@ -5,7 +5,7 @@
 ** DESCRIPTION: CS61C Fall 2020 Project 1
 **
 ** AUTHOR:      Justin Yokota - Starter Code
-**				YOUR NAME HERE
+**				Yechen
 **
 **
 ** DATE:        2020-08-23
@@ -32,9 +32,9 @@ Color *evaluateOneCell(Image *image, int row, int col, uint32_t rule)
 	int *temp = neighborsIndex;
 	Color *newColor = malloc(sizeof(Color));
 
-	newColor->R = 0;
-	newColor->G = 0;
-	newColor->B = 0;
+	newColor->R = 1;
+	newColor->G = 1;
+	newColor->B = 1;
 
 	// 计算index 其实是有瑕疵的 因为如果场上都没有8个或者是有重复的行或列。如何避免？或者设为一种限制？
 	for (int countRow = -1; countRow < 2; countRow++) {
@@ -42,14 +42,14 @@ Color *evaluateOneCell(Image *image, int row, int col, uint32_t rule)
 			if (countRow == 0 && countCol == 0) {
 				continue;
 			}
-			*(temp) = countIndex(countRow, countCol, image->rows, image->cols);
-			temp ++;
+			*(temp) = countIndex(row + countRow, col + countCol, image->rows, image->cols);
+			temp++;
 		}
 	}
-
-	setRGB(&(newColor->R), (*(image->image))->R, image, 0, neighborsIndex, rule);
-	setRGB(&(newColor->G), (*(image->image))->G, image, 1, neighborsIndex, rule);
-	setRGB(&(newColor->B), (*(image->image))->B, image, 2, neighborsIndex, rule);
+	int currentIndex = countIndex(row, col, image->rows, image->cols);
+	setRGB(&(newColor->R), (*(image->image + currentIndex))->R, image, 0, neighborsIndex, rule);
+	setRGB(&(newColor->G), (*(image->image + currentIndex))->G, image, 1, neighborsIndex, rule);
+	setRGB(&(newColor->B), (*(image->image + currentIndex))->B, image, 2, neighborsIndex, rule);
 	free(neighborsIndex);
 
 	return newColor;
@@ -60,15 +60,20 @@ Color *evaluateOneCell(Image *image, int row, int col, uint32_t rule)
 // 3 4 5  index4 = (row - 1) * cols + col - 1   and it should be row 2 col 2
 int countIndex(int row, int col, int maxRow, int maxCol) {
 	int tempRow, tempCol;
-
+	tempRow = row;
+	tempCol = col;
 	if (row == 0) {
 		tempRow = maxRow; 
 	} 
+	if (row > maxRow) {
+		tempRow = 1;
+	}
 	if (col == 0) {
 		tempCol = maxCol;
 	}
-	tempRow = row;
-	tempCol = col;
+	if (col > maxCol) {
+		tempCol = 1;
+	}
 
 	return (tempRow - 1) * maxCol + tempCol - 1;
 }
@@ -84,27 +89,28 @@ void setBit(uint8_t *num, int flag, int bitNum) {
 	}
 }
 // tips: ColorFlag 0-R 1-G 2-B
-void setRGB(uint8_t *newColor, uint8_t currentBits, Image *image, int ColorFlag, int *neighborsIndex, uint32_t rule) {
+void setRGB(uint8_t *color, uint8_t currentBits, Image *image, int ColorFlag, int *index, uint32_t rule) {
 	int state;
-	int liveNeighbors = 0;
+	int liveNeighbors;
 	for (int count1 = 0; count1 < 8; count1++) {
 		// uint8_t currentBits = (*(image->image))->R;
+		liveNeighbors = 0;
 		state = (currentBits >> count1) & 1;
 		for (int count2 = 0; count2 < 8; count2++) {
 			switch (ColorFlag)
 			{
 			case 0:
-				if ((((*(image->image + neighborsIndex[count2]))->R) & 1) == 1) {
+				if ((((*(image->image + index[count2]))->R) & 1) == 1) {
 					liveNeighbors += 1;
 				}
 				break;
 			case 1:
-				if ((((*(image->image + neighborsIndex[count2]))->G) & 1) == 1) {
+				if ((((*(image->image + index[count2]))->G) & 1) == 1) {
 					liveNeighbors += 1;
 				}
 				break;
 			case 2:
-				if ((((*(image->image + neighborsIndex[count2]))->B) & 1) == 1) {
+				if ((((*(image->image + index[count2]))->B) & 1) == 1) {
 					liveNeighbors += 1;
 				}
 				break;
@@ -117,7 +123,7 @@ void setRGB(uint8_t *newColor, uint8_t currentBits, Image *image, int ColorFlag,
 			} else {
 				state = (rule >> liveNeighbors) & 1;
 			}
-			setBit(newColor, state, count1);
+			setBit(color, state, count1);
 		}
 	}
 

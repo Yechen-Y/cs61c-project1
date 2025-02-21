@@ -41,7 +41,7 @@ Image *readData(char *filename)
 		printf("the type is wrong");
 		return NULL;
 	}
-	fscanf(fp, "%d %d", &aImage->rows, &aImage->cols);
+	fscanf(fp, "%d %d", &aImage->cols, &aImage->rows);
 	fscanf(fp, "%d", &maxrange);
 	if (maxrange > 255 || maxrange < 0) {
 		printf("The range is wrong");
@@ -69,7 +69,7 @@ Image *readData(char *filename)
 void writeData(Image *image)
 {
 	//YOUR CODE HERE
-	printf("P3\n%d %d\n255\n", image->rows, image->cols);
+	printf("P3\n%d %d\n255\n", image->cols, image->rows);
 	int countRow, countCol;
 	for (countRow = 0; countRow < image->rows; countRow++) {
 		for (countCol = 0; countCol < image->cols; countCol ++) {
